@@ -25192,14 +25192,18 @@
 	    });
 	  },
 	  render: function render() {
-	    var todos = this.state.todos;
+	    var _state = this.state;
+	    var todos = _state.todos;
+	    var showCompleted = _state.showCompleted;
+	    var searchText = _state.searchText;
 
+	    var filteredTodos = TodoAPI.filterTodos(todos, showCompleted, searchText);
 
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(TodoSearch, { onSearch: this.handleSearch }),
-	      React.createElement(TodoList, { todos: todos, onToggle: this.handleToggle }),
+	      React.createElement(TodoList, { todos: filteredTodos, onToggle: this.handleToggle }),
 	      React.createElement(AddTodoForm, { onAddTodo: this.handleAddTodo })
 	    );
 	  }
@@ -25392,6 +25396,36 @@
 	    // } else {
 	    //   return [];
 	    // }
+	  },
+	  filterTodos: function filterTodos(todos, showCompleted, searchText) {
+	    var filteredTodos = todos;
+
+	    // Filter by showCompleted
+	    filteredTodos = filteredTodos.filter(function (todo) {
+	      return !todo.completed || showCompleted;
+	    });
+	    // Filter by searchText
+	    if (searchText.length > 0) {
+	      searchText = searchText.toLowerCase();
+	      filteredTodos = filteredTodos.filter(function (todo) {
+	        var lowerCaseText = todo.text.toLowerCase();
+	        return lowerCaseText.indexOf(searchText) >= 0;
+	      });
+	    }
+	    // Sort todos with non-completed first
+	    // modifies existing array
+	    // return -1 if a should come before b, 1 if b should come before a
+	    filteredTodos.sort(function (a, b) {
+	      if (!a.completed && b.completed) {
+	        return -1;
+	      } else if (a.completed && !b.completed) {
+	        return 1;
+	      } else {
+	        return 0;
+	      }
+	    });
+
+	    return filteredTodos;
 	  }
 	};
 
